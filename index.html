@@ -1,1 +1,383 @@
-test
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Test Skaner</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:sans-serif;background:#0a0f1e;color:#fff;min-height:100vh}
+.btn{width:100%;padding:14px;border:none;border-radius:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity .2s}
+.btn:active{opacity:.8}
+.btn-green{background:linear-gradient(135deg,#00d4aa,#00a8ff);color:#fff}
+.btn-out{background:transparent;border:2px solid rgba(255,255,255,.2);color:#fff}
+.btn-red{background:linear-gradient(135deg,#ff6b6b,#ff4444);color:#fff}
+.btn-purple{background:linear-gradient(135deg,#8b5cf6,#4da6ff);color:#fff}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px}
+.inp{width:100%;padding:12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;font-size:1rem;margin-top:6px;outline:none}
+.inp:focus{border-color:#00d4aa}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(10,15,30,.95);border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:10}
+.tlogo{font-size:.95rem;font-weight:800;background:linear-gradient(90deg,#00d4aa,#00a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page{display:none;padding:16px;padding-bottom:30px}
+.xb{padding:12px;border-radius:10px;font-size:.85rem;margin-top:10px;display:none;white-space:pre-wrap;line-height:1.5}
+.xb.err{background:rgba(255,59,48,.15);border:1px solid rgba(255,59,48,.3);color:#ff6b6b}
+.xb.ok{background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);color:#00d4aa}
+.xb.inf{background:rgba(0,136,255,.15);border:1px solid rgba(0,136,255,.3);color:#4da6ff}
+.sp{display:inline-block;width:22px;height:22px;border:2px solid rgba(255,255,255,.1);border-top-color:#00d4aa;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sbox{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;text-align:center}
+.snum{font-size:1.3rem;font-weight:800;color:#00d4aa}
+.slab{font-size:.68rem;color:rgba(255,255,255,.4);margin-top:3px;text-transform:uppercase}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.soni-btn{padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.6);font-size:.9rem;font-weight:700;cursor:pointer;text-align:center;transition:all .2s}
+.soni-btn.on{border-color:#00d4aa;background:rgba(0,212,170,.12);color:#00d4aa}
+.javob-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.javob-num{width:28px;text-align:right;font-size:.8rem;color:rgba(255,255,255,.4);flex-shrink:0}
+.harf-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0}
+.harf-btn.on{border-color:#00d4aa;background:rgba(0,212,170,.2);color:#00d4aa}
+.harf-btn.xato{border-color:#ff6b6b;background:rgba(255,107,107,.15);color:#ff6b6b}
+.bo-sh{border-color:rgba(255,150,0,.4)!important;background:rgba(255,150,0,.08)!important}
+.rasm-zone{border:2px dashed rgba(0,212,170,.4);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;background:rgba(0,212,170,.03);transition:all .2s}
+.rasm-zone:active{background:rgba(0,212,170,.08)}
+#preview-img{width:100%;border-radius:12px;margin-top:10px;display:none;max-height:300px;object-fit:contain}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.badge-green{background:rgba(0,212,170,.2);color:#00d4aa}
+.badge-red{background:rgba(255,107,107,.2);color:#ff6b6b}
+.badge-yellow{background:rgba(255,165,0,.2);color:#ffa500}
+select.inp option{background:#1a2035;color:#fff}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SETUP sahifasi -->
+<div id="p-setup" class="page" style="display:block">
+  <div class="top">
+    <div class="tlogo">📷 Test Skaner</div>
+    <div id="av-setup" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#00d4aa,#00a8ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">U</div>
+  </div>
+  <div style="padding:16px">
+    <div class="card">
+      <div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:4px">Test kodi</div>
+      <input class="inp" id="test-kod" type="text" placeholder="Masalan: KIM2024" style="text-transform:uppercase"/>
+      <div style="font-size:.8rem;color:rgba(255,255,255,.4);margin:12px 0 8px">Savollar soni</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+        <button class="soni-btn" onclick="soniT(10)">10</button>
+        <button class="soni-btn" onclick="soniT(20)">20</button>
+        <button class="soni-btn" onclick="soniT(30)">30</button>
+        <button class="soni-btn on" id="s40" onclick="soniT(40)">40</button>
+        <button class="soni-btn" onclick="soniT(50)">50</button>
+      </div>
+      <div class="xb" id="setup-xb"></div>
+      <button class="btn btn-green" onclick="setupNext()" style="margin-top:14px">Davom etish →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SKANER sahifasi -->
+<div id="p-scan" class="page">
+  <div class="top">
+    <button onclick="go('p-setup')" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:1.2rem;cursor:pointer">←</button>
+    <div class="tlogo">Varaq skanerlash</div>
+    <div style="font-size:.78rem;color:#00d4aa;font-weight:700" id="scan-info">—</div>
+  </div>
+  <div style="padding:16px">
+    <div class="card">
+      <label class="rasm-zone" for="rasm-inp">
+        <div style="font-size:2.5rem;margin-bottom:8px">📷</div>
+        <div style="font-size:.9rem;font-weight:700;color:#00d4aa">Rasm yuklash yoki kamera</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:4px">JPG, PNG — aniq va tekis oling</div>
+        <input type="file" id="rasm-inp" accept="image/*" capture="environment" style="display:none" onchange="rasmTanla(this)"/>
+      </label>
+      <img id="preview-img" src="" alt="preview"/>
+      <div class="xb" id="scan-xb"></div>
+      <button class="btn btn-green" id="skaner-btn" onclick="skanerlash()" style="display:none;margin-top:12px">🔍 Skanerlash</button>
+    </div>
+    <div style="text-align:center;padding:8px 0">
+      <span style="font-size:.78rem;color:rgba(255,255,255,.3)">Varaqni to'liq, tekis va yorug'da oling</span>
+    </div>
+  </div>
+</div>
+
+<!-- NATIJA sahifasi -->
+<div id="p-natija" class="page">
+  <div class="top">
+    <button onclick="go('p-scan')" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:1.2rem;cursor:pointer">←</button>
+    <div class="tlogo">Natijani tekshirish</div>
+    <div style="font-size:.72rem;color:rgba(255,255,255,.4)" id="nat-info">—</div>
+  </div>
+  <div style="padding:16px">
+
+    <!-- O'quvchi info -->
+    <div class="card" id="oquvchi-card">
+      <div style="font-size:.75rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">O'quvchi</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:.95rem;font-weight:700" id="oq-ism">—</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">ID: <span id="oq-id">—</span></div>
+        </div>
+        <div id="oq-badge"></div>
+      </div>
+      <div id="id-qolda-wrap" style="display:none;margin-top:10px">
+        <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:4px">ID topilmadi — qo'lda kiriting:</div>
+        <input class="inp" id="id-qolda" type="text" placeholder="001" maxlength="3" style="margin-top:0"/>
+        <button class="btn btn-purple" onclick="idQolda()" style="margin-top:8px">✅ Tasdiqlash</button>
+      </div>
+    </div>
+
+    <!-- Statistika -->
+    <div class="g3" style="margin-bottom:12px">
+      <div class="sbox"><div class="snum" id="nat-togri" style="color:#00d4aa">0</div><div class="slab">To'g'ri</div></div>
+      <div class="sbox"><div class="snum" id="nat-bosh" style="color:#ffa500">0</div><div class="slab">Bo'sh</div></div>
+      <div class="sbox"><div class="snum" id="nat-jami">0</div><div class="slab">Jami</div></div>
+    </div>
+
+    <!-- Javoblar jadvali -->
+    <div class="card">
+      <div style="font-size:.75rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">
+        Javoblar — <span style="color:rgba(255,255,255,.3)">xatoni bosib tuzating</span>
+      </div>
+      <div id="javoblar-list"></div>
+    </div>
+
+    <div class="xb" id="nat-xb"></div>
+    <button class="btn btn-green" id="saqlash-btn" onclick="saqlash()" style="margin-top:4px">💾 Saqlash</button>
+    <button class="btn btn-out" onclick="go('p-scan')" style="margin-top:6px">📷 Qayta skanerlash</button>
+  </div>
+</div>
+
+<!-- MUVAFFAQIYAT sahifasi -->
+<div id="p-done" class="page" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center">
+  <div style="font-size:5rem;margin-bottom:16px">✅</div>
+  <div style="font-size:1.2rem;font-weight:800;margin-bottom:8px" id="done-ism">Saqlandi!</div>
+  <div style="font-size:.88rem;color:rgba(255,255,255,.4);margin-bottom:24px" id="done-ball">—</div>
+  <button class="btn btn-green" onclick="go('p-scan')" style="max-width:220px">📷 Keyingi varaq</button>
+  <button class="btn btn-out" onclick="go('p-setup')" style="max-width:220px;margin-top:8px">🏠 Bosh sahifa</button>
+</div>
+
+</div><!-- /app -->
+
+<script>
+var API = 'https://milliy-imtihon.onrender.com';
+var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){tg.ready();tg.expand();}
+var uid = tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 5145005581;
+var uname = tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : 'Ustoz';
+
+var nSavol = 40;
+var testKod = '';
+var skanJavoblar = {};
+var togriJavoblar = {};
+var varaqId = '';
+var oquvchi = null;
+var rasmFayl = null;
+
+// Avatar
+document.getElementById('av-setup').textContent = uname.charAt(0).toUpperCase();
+
+function go(id){
+  ['p-setup','p-scan','p-natija','p-done'].forEach(function(p){
+    var e=document.getElementById(p); if(e) e.style.display='none';
+  });
+  var el=document.getElementById(id);
+  if(el){el.style.display='block'; window.scrollTo(0,0);}
+}
+
+function soniT(n){
+  nSavol=n;
+  [10,20,30,40,50].forEach(function(x){
+    var e=document.getElementById('s'+x);
+    if(e) e.className='soni-btn'+(x===n?' on':'');
+  });
+}
+// s40 boshlang'ich
+document.getElementById('s40').className='soni-btn on';
+
+function xb(id,cls,txt){
+  var e=document.getElementById(id);
+  if(!e) return;
+  if(!txt){e.style.display='none';return;}
+  e.style.display='block';e.className='xb '+cls;e.textContent=txt;
+}
+
+function setupNext(){
+  testKod = document.getElementById('test-kod').value.trim().toUpperCase();
+  if(!testKod){xb('setup-xb','err','Test kodini kiriting!');return;}
+  xb('setup-xb','inf','Tekshirilmoqda...');
+  fetch(API+'/test/tekshir/'+testKod)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(!d.topildi){xb('setup-xb','err','Test topilmadi!');return;}
+      if(d.tugadi){xb('setup-xb','err','Bu test allaqachon yakunlangan!');return;}
+      nSavol = d.savollar_soni || nSavol;
+      // Savollar soni tugmalarini yangilaymiz
+      [10,20,30,40,50].forEach(function(x){
+        var e=document.getElementById('s'+x);
+        if(e) e.className='soni-btn'+(x===nSavol?' on':'');
+      });
+      document.getElementById('scan-info').textContent = testKod+' | '+nSavol+' savol';
+      xb('setup-xb','','');
+      go('p-scan');
+    })
+    .catch(function(){xb('setup-xb','err','Serverga ulanib bo\'lmadi!');});
+}
+
+function rasmTanla(inp){
+  if(!inp.files||!inp.files[0]) return;
+  rasmFayl = inp.files[0];
+  var url = URL.createObjectURL(rasmFayl);
+  var img = document.getElementById('preview-img');
+  img.src = url; img.style.display='block';
+  document.getElementById('skaner-btn').style.display='block';
+  xb('scan-xb','','');
+}
+
+async function skanerlash(){
+  if(!rasmFayl){xb('scan-xb','err','Avval rasm tanlang!');return;}
+  var btn=document.getElementById('skaner-btn');
+  btn.disabled=true; btn.innerHTML='<span class="sp"></span> Skanerlanyapti...';
+  xb('scan-xb','inf','Rasm tahlil qilinmoqda...');
+  try{
+    var fd=new FormData();
+    fd.append('test_kod', testKod);
+    fd.append('n_savol', nSavol);
+    fd.append('rasm', rasmFayl);
+    var r=await fetch(API+'/skaner/rasm',{method:'POST',body:fd});
+    var d=await r.json();
+    if(!r.ok){xb('scan-xb','err',d.detail||'Xato');btn.disabled=false;btn.textContent='🔍 Skanerlash';return;}
+    skanJavoblar = d.javoblar || {};
+    togriJavoblar = d.togri_javoblar || {};
+    varaqId = d.varaq_id || '';
+    oquvchi = d.oquvchi || null;
+    natijaKor();
+    go('p-natija');
+  }catch(e){
+    xb('scan-xb','err','Xato: '+e.message);
+  }
+  btn.disabled=false; btn.textContent='🔍 Skanerlash';
+}
+
+function natijaKor(){
+  // O'quvchi info
+  var oqIsmEl=document.getElementById('oq-ism');
+  var oqIdEl=document.getElementById('oq-id');
+  var oqBadge=document.getElementById('oq-badge');
+  var idWrap=document.getElementById('id-qolda-wrap');
+
+  if(oquvchi){
+    oqIsmEl.textContent = oquvchi.ism + (oquvchi.familiya?' '+oquvchi.familiya:'');
+    oqIdEl.textContent = varaqId;
+    oqBadge.innerHTML='<span class="badge badge-green">✅ Topildi</span>';
+    idWrap.style.display='none';
+  } else if(varaqId){
+    oqIsmEl.textContent = 'Noma\'lum';
+    oqIdEl.textContent = varaqId+' (ro\'yxatda yo\'q)';
+    oqBadge.innerHTML='<span class="badge badge-yellow">⚠️ ID topilmadi</span>';
+    idWrap.style.display='block';
+  } else {
+    oqIsmEl.textContent = 'ID aniqlanmadi';
+    oqIdEl.textContent = '—';
+    oqBadge.innerHTML='<span class="badge badge-red">❌ ID yo\'q</span>';
+    idWrap.style.display='block';
+  }
+
+  document.getElementById('nat-info').textContent = testKod+' | '+nSavol+' savol';
+
+  // Javoblarni ko'rsatish
+  var togriSon=0, boshSon=0;
+  var html='';
+  var harflar = ['A','B','C','D'];
+  for(var i=1;i<=nSavol;i++){
+    var k=String(i);
+    var jav=(skanJavoblar[k]||'').toUpperCase();
+    var togri=(togriJavoblar[k]||'').toUpperCase();
+    if(!jav) boshSon++;
+    else if(togri && jav===togri) togriSon++;
+    html+='<div class="javob-row" id="row'+i+'">';
+    html+='<span class="javob-num">'+i+'.</span>';
+    var hl=(i>=33&&i<=35)?['A','B','C','D','E','F']:harflar;
+    hl.forEach(function(h){
+      var cls='harf-btn';
+      if(jav===h) cls+=' on';
+      if(togri&&jav===h&&jav!==togri) cls=' harf-btn xato';
+      html+='<button class="'+cls+'" onclick="javobO('+i+',\''+h+'\')" id="jb'+i+h+'">'+h+'</button>';
+    });
+    if(i>=36&&i<=40){
+      html+='<input class="inp" id="joch'+i+'" type="text" placeholder="Javob" value="'+(jav||'')+'" oninput="javobOch('+i+',this.value)" style="margin-top:0;flex:1;padding:6px 8px;font-size:.82rem"/>';
+    }
+    if(!jav) html+='<span style="font-size:.7rem;color:#ffa500;margin-left:4px">bo\'sh</span>';
+    html+='</div>';
+  }
+  document.getElementById('javoblar-list').innerHTML=html;
+  document.getElementById('nat-togri').textContent=togriSon;
+  document.getElementById('nat-bosh').textContent=boshSon;
+  document.getElementById('nat-jami').textContent=nSavol;
+}
+
+function javobO(savol, harf){
+  var cur=(skanJavoblar[String(savol)]||'').toUpperCase();
+  if(cur===harf) skanJavoblar[String(savol)]='';
+  else skanJavoblar[String(savol)]=harf;
+  natijaKor();
+  // Scroll saqlab qolish uchun
+  setTimeout(function(){
+    var el=document.getElementById('row'+savol);
+    if(el) el.scrollIntoView({block:'center',behavior:'smooth'});
+  },50);
+}
+
+function javobOch(savol, val){
+  skanJavoblar[String(savol)]=val.trim().toUpperCase();
+}
+
+function idQolda(){
+  var v=document.getElementById('id-qolda').value.trim().zfill?
+    document.getElementById('id-qolda').value.trim() :
+    document.getElementById('id-qolda').value.trim().padStart(3,'0');
+  if(!v){xb('nat-xb','err','ID kiriting!');return;}
+  varaqId=v.padStart(3,'0');
+  fetch(API+'/student/id/'+testKod+'/'+varaqId)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.success){
+        oquvchi=d.oquvchi;
+        natijaKor();
+        xb('nat-xb','ok','O\'quvchi topildi: '+oquvchi.ism);
+      } else {
+        xb('nat-xb','err','Bu ID ro\'yxatda yo\'q!');
+      }
+    }).catch(function(){xb('nat-xb','err','Xato');});
+}
+
+async function saqlash(){
+  if(!varaqId){xb('nat-xb','err','Avval varaq ID ni kiriting!');return;}
+  var btn=document.getElementById('saqlash-btn');
+  btn.disabled=true; btn.innerHTML='<span class="sp"></span> Saqlanmoqda...';
+  try{
+    var r=await fetch(API+'/natija/skaner',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({test_kod:testKod,varaq_id:varaqId,javoblar:skanJavoblar})});
+    var d=await r.json();
+    if(d.success){
+      var oq=d.oquvchi||oquvchi||{};
+      document.getElementById('done-ism').textContent=(oq.ism||'O\'quvchi')+' — saqlandi!';
+      document.getElementById('done-ball').textContent='Test: '+testKod+' | ID: '+varaqId;
+      // Keyingi varaqa tayyorlanish
+      rasmFayl=null;
+      skanJavoblar={}; varaqId=''; oquvchi=null;
+      var img=document.getElementById('preview-img');
+      img.style.display='none'; img.src='';
+      document.getElementById('skaner-btn').style.display='none';
+      document.getElementById('rasm-inp').value='';
+      go('p-done');
+    } else {
+      xb('nat-xb','err',d.detail||'Xato yuz berdi');
+    }
+  }catch(e){xb('nat-xb','err','Serverga ulanib bo\'lmadi!');}
+  btn.disabled=false; btn.textContent='💾 Saqlash';
+}
+</script>
+</body>
+</html>
