@@ -114,17 +114,23 @@ select.inp option{background:#1a2035;color:#fff}
     <!-- O'quvchi info -->
     <div class="card" id="oquvchi-card">
       <div style="font-size:.75rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">O'quvchi</div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:.95rem;font-weight:700" id="oq-ism">—</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">ID: <span id="oq-id">—</span></div>
+      <!-- Tanlangan -->
+      <div id="oq-selected" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:.95rem;font-weight:700" id="oq-ism">—</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px" id="oq-id-row"></div>
+          </div>
+          <div id="oq-badge"></div>
         </div>
-        <div id="oq-badge"></div>
+        <button onclick="oqOzgartir()" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:.75rem;cursor:pointer;margin-top:8px;padding:0">✏️ O'zgartirish</button>
       </div>
-      <div id="id-qolda-wrap" style="display:none;margin-top:10px">
-        <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:4px">ID topilmadi — qo'lda kiriting:</div>
-        <input class="inp" id="id-qolda" type="text" placeholder="001" maxlength="3" style="margin-top:0"/>
-        <button class="btn btn-purple" onclick="idQolda()" style="margin-top:8px">✅ Tasdiqlash</button>
+      <!-- Qidiruv -->
+      <div id="oq-search">
+        <div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:4px">Ism bo'yicha qidiring</div>
+        <input class="inp" id="oq-qidir" type="text" placeholder="Masalan: Alisher" oninput="oqSearch(this.value)" style="margin-top:0"/>
+        <div id="oq-results" style="margin-top:8px"></div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.25);margin-top:6px">Ro'yxatdan o'tmagan bo'lsa ismini yozing va tanlang</div>
       </div>
     </div>
 
@@ -260,30 +266,61 @@ async function skanerlash(){
   btn.disabled=false; btn.textContent='🔍 Skanerlash';
 }
 
+var oqTimer = null;
+function oqSearch(v){
+  clearTimeout(oqTimer);
+  var res=document.getElementById('oq-results');
+  if(v.length<2){res.innerHTML='';return;}
+  oqTimer=setTimeout(function(){
+    fetch(API+'/student/qidir/'+testKod+'?q='+encodeURIComponent(v))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var list=d.talabalar||[];
+        if(!list.length){
+          res.innerHTML='<div style="padding:10px;background:rgba(255,150,0,.08);border-radius:10px;font-size:.8rem;color:rgba(255,255,255,.5)">Ro\'yxatda topilmadi. <button onclick="oqQolda()" style="background:none;border:none;color:#00d4aa;cursor:pointer;font-size:.8rem;text-decoration:underline">Shu ismni saqlash</button></div>';
+          return;
+        }
+        res.innerHTML=list.map(function(t){
+          var full=t.ism+(t.familiya?' '+t.familiya:'');
+          return '<button onclick="oqTanla(\''+t.varaq_id+'\',\''+t.ism+'\',\''+t.familiya+'\','+t.user_id+')" style="display:block;width:100%;text-align:left;background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:10px;padding:10px 12px;color:#fff;cursor:pointer;margin-bottom:6px;font-size:.88rem"><span style="font-weight:700">'+full+'</span><span style="color:rgba(255,255,255,.35);font-size:.72rem;margin-left:8px">ID: '+t.varaq_id+(t.user_id?'  •  Bot: ✅':'')+'</span></button>';
+        }).join('');
+      }).catch(function(){});
+  },300);
+}
+function oqTanla(vid, ism, familiya, userId){
+  varaqId=vid;
+  oquvchi={ism:ism,familiya:familiya,user_id:userId};
+  document.getElementById('oq-ism').textContent=ism+(familiya?' '+familiya:'');
+  document.getElementById('oq-id-row').textContent=vid?(userId?'Bot orqali ro\'yxatdan o\'tgan ✅':'ID: '+vid):'';
+  document.getElementById('oq-badge').innerHTML=userId?'<span class="badge badge-green">✅ Bot</span>':'<span class="badge badge-yellow">📋 Ro\'yxat</span>';
+  document.getElementById('oq-selected').style.display='block';
+  document.getElementById('oq-search').style.display='none';
+}
+function oqQolda(){
+  var v=document.getElementById('oq-qidir').value.trim();
+  if(!v)return;
+  varaqId='';
+  oquvchi={ism:v,familiya:'',user_id:0};
+  document.getElementById('oq-ism').textContent=v;
+  document.getElementById('oq-id-row').textContent='Ro\'yxatdan tashqari';
+  document.getElementById('oq-badge').innerHTML='<span class="badge badge-yellow">⚠️ Ro\'yxatsiz</span>';
+  document.getElementById('oq-selected').style.display='block';
+  document.getElementById('oq-search').style.display='none';
+}
+function oqOzgartir(){
+  oquvchi=null; varaqId='';
+  document.getElementById('oq-selected').style.display='none';
+  document.getElementById('oq-search').style.display='block';
+  document.getElementById('oq-qidir').value='';
+  document.getElementById('oq-results').innerHTML='';
+  document.getElementById('oq-qidir').focus();
+}
+
 function natijaKor(){
-  // O'quvchi info
-  var oqIsmEl=document.getElementById('oq-ism');
-  var oqIdEl=document.getElementById('oq-id');
-  var oqBadge=document.getElementById('oq-badge');
-  var idWrap=document.getElementById('id-qolda-wrap');
-
-  if(oquvchi){
-    oqIsmEl.textContent = oquvchi.ism + (oquvchi.familiya?' '+oquvchi.familiya:'');
-    oqIdEl.textContent = varaqId;
-    oqBadge.innerHTML='<span class="badge badge-green">✅ Topildi</span>';
-    idWrap.style.display='none';
-  } else if(varaqId){
-    oqIsmEl.textContent = 'Noma\'lum';
-    oqIdEl.textContent = varaqId+' (ro\'yxatda yo\'q)';
-    oqBadge.innerHTML='<span class="badge badge-yellow">⚠️ ID topilmadi</span>';
-    idWrap.style.display='block';
-  } else {
-    oqIsmEl.textContent = 'ID aniqlanmadi';
-    oqIdEl.textContent = '—';
-    oqBadge.innerHTML='<span class="badge badge-red">❌ ID yo\'q</span>';
-    idWrap.style.display='block';
-  }
-
+  document.getElementById('oq-selected').style.display='none';
+  document.getElementById('oq-search').style.display='block';
+  document.getElementById('oq-qidir').value='';
+  document.getElementById('oq-results').innerHTML='';
   document.getElementById('nat-info').textContent = testKod+' | '+nSavol+' savol';
 
   // Javoblarni ko'rsatish
@@ -333,41 +370,23 @@ function javobOch(savol, val){
   skanJavoblar[String(savol)]=val.trim().toUpperCase();
 }
 
-function idQolda(){
-  var v=document.getElementById('id-qolda').value.trim().zfill?
-    document.getElementById('id-qolda').value.trim() :
-    document.getElementById('id-qolda').value.trim().padStart(3,'0');
-  if(!v){xb('nat-xb','err','ID kiriting!');return;}
-  varaqId=v.padStart(3,'0');
-  fetch(API+'/student/id/'+testKod+'/'+varaqId)
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.success){
-        oquvchi=d.oquvchi;
-        natijaKor();
-        xb('nat-xb','ok','O\'quvchi topildi: '+oquvchi.ism);
-      } else {
-        xb('nat-xb','err','Bu ID ro\'yxatda yo\'q!');
-      }
-    }).catch(function(){xb('nat-xb','err','Xato');});
-}
 
 async function saqlash(){
-  if(!varaqId){xb('nat-xb','err','Avval varaq ID ni kiriting!');return;}
+  if(!oquvchi){xb('nat-xb','err','Avval o\'quvchini toping!');return;}
   var btn=document.getElementById('saqlash-btn');
   btn.disabled=true; btn.innerHTML='<span class="sp"></span> Saqlanmoqda...';
   try{
+    var body={test_kod:testKod, varaq_id:varaqId||'', javoblar:skanJavoblar,
+              ism:oquvchi.ism, familiya:oquvchi.familiya||''};
     var r=await fetch(API+'/natija/skaner',{method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({test_kod:testKod,varaq_id:varaqId,javoblar:skanJavoblar})});
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
     var d=await r.json();
     if(d.success){
       var oq=d.oquvchi||oquvchi||{};
+      var ball=d.ball||'';
       document.getElementById('done-ism').textContent=(oq.ism||'O\'quvchi')+' — saqlandi!';
-      document.getElementById('done-ball').textContent='Test: '+testKod+' | ID: '+varaqId;
-      // Keyingi varaqa tayyorlanish
-      rasmFayl=null;
-      skanJavoblar={}; varaqId=''; oquvchi=null;
+      document.getElementById('done-ball').textContent=ball?'Ball: '+ball+' | Test: '+testKod:'Test: '+testKod;
+      rasmFayl=null; skanJavoblar={}; varaqId=''; oquvchi=null;
       var img=document.getElementById('preview-img');
       img.style.display='none'; img.src='';
       document.getElementById('skaner-btn').style.display='none';
