@@ -64,11 +64,11 @@ select.inp option{background:#1a2035;color:#fff}
       <input class="inp" id="test-kod" type="text" placeholder="Masalan: KIM2024" style="text-transform:uppercase"/>
       <div style="font-size:.8rem;color:rgba(255,255,255,.4);margin:12px 0 8px">Savollar soni</div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-        <button class="soni-btn" onclick="soniT(10)">10</button>
-        <button class="soni-btn" onclick="soniT(20)">20</button>
-        <button class="soni-btn" onclick="soniT(30)">30</button>
+        <button class="soni-btn" id="s10" onclick="soniT(10)">10</button>
+        <button class="soni-btn" id="s20" onclick="soniT(20)">20</button>
+        <button class="soni-btn" id="s30" onclick="soniT(30)">30</button>
         <button class="soni-btn on" id="s40" onclick="soniT(40)">40</button>
-        <button class="soni-btn" onclick="soniT(50)">50</button>
+        <button class="soni-btn" id="s50" onclick="soniT(50)">50</button>
       </div>
       <div class="xb" id="setup-xb"></div>
       <button class="btn btn-green" onclick="setupNext()" style="margin-top:14px">Davom etish →</button>
@@ -84,6 +84,7 @@ select.inp option{background:#1a2035;color:#fff}
     <div style="font-size:.78rem;color:#00d4aa;font-weight:700" id="scan-info">—</div>
   </div>
   <div style="padding:16px">
+    <button class="btn btn-out" onclick="go('p-setup')" style="margin-bottom:12px;margin-top:0">← Orqaga</button>
     <div class="card">
       <label class="rasm-zone" for="rasm-inp">
         <div style="font-size:2.5rem;margin-bottom:8px">📷</div>
